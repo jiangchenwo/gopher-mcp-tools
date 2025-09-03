@@ -74,6 +74,18 @@
     "S-N only": "S-N grade basis only (pass/fail), course may not be audited or taken A-F. (Not recommended)",
     "Aud": "Audit. Course may be audited (attended) for no grade. No credit granted. (Not available)"
   },
+  "Student Ratings": {
+    "RMP": "Rate My Professors. A third-party website where students can rate their professors. Use with caution as the ratings may not be representative of the entire class.",
+    "SRT": "Student Ratings of Teaching. An internal UMN survey that students can fill out at the end of the course to rate their professor and course. Not all courses have SRT data available.",
+    "DEEP_UND": "Deeper understanding of the subject matter.",
+    "STIM_INT": "Interest in the subject matter was stimulated.",
+    "TECH_EFF": "Effective use of instructional technology.",
+    "ACC_SUP": "Activities in course supported my learning.",
+    "EFFORT": "Effort needed to succeed is reasonable.",
+    "GRAD_STAND": "Grading standards were clear.",
+    "RECC": "I would recommend this course.",
+    "RESP": "Number of responses."
+  },
   "Departments": {
     "AAS": "Asian American Studies",
     "ABUS": "Applied Business",
