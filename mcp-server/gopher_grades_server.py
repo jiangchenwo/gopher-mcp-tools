@@ -158,7 +158,6 @@ app = FastMCP(
 )
 
 
-
 # Define tools
 @app.tool()
 async def search_courses(
@@ -168,7 +167,7 @@ async def search_courses(
     limit: int = 20,
     dept_abbr: str = "",
     course_num: str = "",
-    level: Set[Literal[1,2,3,4,5,6,7,8,9]] | Set[Literal["undergraduate", "master", "doctoral"]] | None = None,
+    level: List[Literal[1,2,3,4,5,6,7,8,9]] | List[Literal["undergraduate", "master", "doctoral"]] = None,
     min_gpa: float = -1,
     max_gpa: float = 5
 ) -> Dict[str, Any]:
