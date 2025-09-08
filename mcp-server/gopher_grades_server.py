@@ -122,9 +122,9 @@ class Database:
 class DbContext:
     """ Database context for managing queries and results."""
     db: Database
-    last_query: str = None
-    last_result: Dict[str, Any] = None
-    query_history: List[str] = None
+    last_query: str | None = None
+    last_result: Dict[str, Any] | None = None
+    query_history: List[str] | None = None
     
     def __post_init__(self):
         if self.query_history is None:
@@ -172,7 +172,7 @@ async def search_courses(
     limit: int = 20,
     dept_abbr: str = "",
     course_num: str = "",
-    level: Set[Literal[1,2,3,4,5,6,7,8,9]] | set[Literal["undergraduate", "master", "doctoral"]] = None,
+    level: Set[Literal[1,2,3,4,5,6,7,8,9]] | set[Literal["undergraduate", "master", "doctoral"]] | None = None,
     min_gpa: float = -1,
     max_gpa: float = 5
 ) -> Dict[str, Any]:
@@ -403,7 +403,7 @@ async def get_course_details(
 async def search_professors(
     ctx: Context, 
     professor_name: str = "",
-    professor_id: int = None,
+    professor_id: int | None = None,
     limit: int = 20
 ) -> List[Dict[str, Any]]:
     """
@@ -507,7 +507,7 @@ async def get_professor_details(
         A dictionary containing
             "professor" as key for professor details including database ID, name, Rate My Professor score, difficulty rating, and link,
             "overall_statistics" as key for overall statistics including total number of students taught, number of unique courses taught, overall grade distribution, and overall grade statistics,
-            "detailed_grades_stats" as key for a list of courses taught with their respective grade statistics including course details, total number of students, aggregated grade distribution, overall course grade statistics, and per-term grade statistics with term details.
+            "details_per_course" as key for a list of courses taught with their respective course details, total number of students, aggregated grade distribution, overall course grade statistics, and per-term grade statistics with term details.
     """
     db_context = ctx.request_context.lifespan_context
 
@@ -527,14 +527,18 @@ async def get_professor_details(
     # Get all grades given by this professor
     all_grades_professor = {}
     total_students = 0
-    grades_per_course = {}
+    per_course = {}
 
     for row in await db_context.db.query(
         """
         SELECT 
             c.dept_abbr,
             c.course_num,
-            c.class_desc,
+            c.class_desc as course_name,
+            c.onestop as onestop_link,
+            c.onestop_desc as course_description,
+            c.cred_min,
+            c.cred_max,
             t.term,
             t.students,
             t.grades
@@ -550,44 +554,49 @@ async def get_professor_details(
         term_key = term_to_name(row['term'])
         grades = parse_json_field(row['grades']) or {}
 
-        if course_key not in grades_per_course:
-            grades_per_course[course_key] = {}
-            grades_per_course[course_key]['all_grades_course'] = {}
-            grades_per_course[course_key]['students'] = 0
-        if term_key not in grades_per_course[course_key]:
-            grades_per_course[course_key]['grades_per_term'][term_key] = {
+        if course_key not in per_course:
+            per_course[course_key] = {
+                "dept_abbr": row['dept_abbr'],
+                "course_num": row['course_num'],
+                "course_name": row['course_name'],
+                "onestop_link": row['onestop_link'],
+                "course_description": row['course_description'],
+                "cred_min": row['cred_min'],
+                "cred_max": row['cred_max'],
+                "all_grades_course": {},
+                "students": 0,
+                "grades_per_term": {}
+            }
+        if term_key not in per_course[course_key]:
+            per_course[course_key]['grades_per_term'][term_key] = {
                 "students": row['students'],
                 "grades": grades,
                 "stats": calculate_grades_stats(grades)
             }
 
         total_students += row['students']
-        grades_per_course[course_key]['students'] += row['students']
+        per_course[course_key]['students'] += row['students']
         for grade, count in grades.items():
             all_grades_professor[grade] = all_grades_professor.get(grade, 0) + count
-            grades_per_course[course_key]['all_grades_course'][grade] = grades_per_course[course_key]['all_grades_course'].get(grade, 0) + count
+            per_course[course_key]['all_grades_course'][grade] = per_course[course_key]['all_grades_course'].get(grade, 0) + count
 
     # Calculate overall statistics
     overall_stats = calculate_grades_stats(all_grades_professor)
+    overall_stats.update({
+        "unique_courses": len(per_course),
+        "overall_grade_distribution": all_grades_professor
+    })
 
     # Calculate per-course and per-course-term statistics
-    for course_key, data in grades_per_course.items():
+    for course_key, data in per_course.items():
         data['course_grade_stats'] = calculate_grades_stats(data['all_grades_course'])
         for term, term_data in data['grades_per_term'].items():
             term_data['stats'] = calculate_grades_stats(term_data['grades'])
 
-    # Sort courses by GPA
-    grades_per_course.sort(key=lambda x: x['course_grade_stats']["average_gpa"] if x['course_grade_stats']["average_gpa"] else 0, reverse=True)
-
     return {
         "professor": professor,
-        "overall_statistics": {
-            "total_students_taught": total_students,
-            "unique_courses": len(grades_per_course),
-            "overall_grade_distribution": all_grades_professor,
-            "overall_stats": overall_stats,
-        },
-        "detailed_grades_stats": grades_per_course,
+        "overall_statistics": overall_stats,
+        "details_per_course": per_course,
     }
 
 @app.tool()
