@@ -4,7 +4,6 @@ Provides tools for accessing the GopherGrades SQLite database
 """
 
 import os
-import sqlite3
 import logging
 from typing import List, Dict, Any, Literal, Set
 import json
@@ -16,7 +15,7 @@ from utils import parse_json_field, row_to_dict, calculate_grades_stats, term_to
 from fastmcp import FastMCP, Context
 
 # Async operations
-import asyncio
+import aiosqlite
 import aiofiles
 from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
@@ -34,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 # Define Lifespan and Database classes
 class Database:
-    """Database class with async connect/disconnect and query support."""
+    """Database class with async support using aiosqlite."""
 
     def __init__(self):
         TOOL_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -43,14 +42,11 @@ class Database:
         self.conn = None
 
     async def connect(self) -> "Database":
-        """Connect to database (runs in thread for async)."""
+        """Connect to database using aiosqlite."""
         try:
             logger.info(f"Connecting to database at {self.DB_PATH}")
-            loop = asyncio.get_running_loop()
-            self.conn = await loop.run_in_executor(
-                None, lambda: sqlite3.connect(self.DB_PATH)
-            )
-            self.conn.row_factory = sqlite3.Row
+            self.conn = await aiosqlite.connect(self.DB_PATH)
+            self.conn.row_factory = aiosqlite.Row 
             logger.info("Database connection established successfully")
             return self
         except Exception as e:
@@ -58,30 +54,17 @@ class Database:
             raise
 
     async def disconnect(self) -> None:
-        """Disconnect from database (runs in thread for async)."""
+        """Disconnect from database."""
         try:
             if self.conn:
                 logger.info("Disconnecting from database")
-                loop = asyncio.get_running_loop()
-                await loop.run_in_executor(None, self.conn.close)
+                await self.conn.close()
                 logger.info("Database disconnected successfully")
         except Exception as e:
             logger.error(f"Error disconnecting from database: {e}")
 
-    async def query(self, query: str, params: tuple = None, type: str = "all", context: "DbContext" = None):
-        """Execute a query asynchronously."""
-        def _query():
-            cursor = self.conn.cursor()
-            if params:
-                cursor.execute(query, params)
-            else:
-                cursor.execute(query)
-            if type == "one":
-                return cursor.fetchone()
-            elif type == "all":
-                return cursor.fetchall()
-            else:
-                raise ValueError("Invalid query type specified.")
+    async def query(self, query: str, params: tuple | None = None, type: str = "all", context: 'DbContext' = None):
+        """Execute a query using aiosqlite."""
         try:
             # Log query details if context is provided
             if context:
@@ -92,8 +75,20 @@ class Database:
                 context.query_history.append(formatted_query)
                 logger.info(f"Executing query: {formatted_query}")
             
-            loop = asyncio.get_running_loop()
-            result = await loop.run_in_executor(None, _query)
+            # Execute query with aiosqlite
+            if params:
+                cursor = await self.conn.execute(query, params)
+            else:
+                cursor = await self.conn.execute(query)
+            
+            if type == "one":
+                result = await cursor.fetchone()
+            elif type == "all":
+                result = await cursor.fetchall()
+            else:
+                raise ValueError("Invalid query type specified.")
+            
+            await cursor.close()
             
             # Log result summary if context is provided
             if context:
@@ -106,6 +101,7 @@ class Database:
                 logger.info(f"Query completed: {result_summary}")
             
             return result
+            
         except Exception as e:
             if context:
                 error_info = {
@@ -117,15 +113,15 @@ class Database:
                 logger.error(f"Query failed: {error_info}")
             logger.error(f"Database async query failed: {e}")
             raise
-
+    
 @dataclass
 class DbContext:
     """ Database context for managing queries and results."""
     db: Database
-    last_query: str | None = None
-    last_result: Dict[str, Any] | None = None
-    query_history: List[str] | None = None
-    
+    last_query: str = ""
+    last_result: Dict[str, Any] = None
+    query_history: List[str] = None
+
     def __post_init__(self):
         if self.query_history is None:
             self.query_history = []
@@ -172,7 +168,7 @@ async def search_courses(
     limit: int = 20,
     dept_abbr: str = "",
     course_num: str = "",
-    level: Set[Literal[1,2,3,4,5,6,7,8,9]] | set[Literal["undergraduate", "master", "doctoral"]] | None = None,
+    level: Set[Literal[1,2,3,4,5,6,7,8,9]] | Set[Literal["undergraduate", "master", "doctoral"]] | None = None,
     min_gpa: float = -1,
     max_gpa: float = 5
 ) -> Dict[str, Any]:
