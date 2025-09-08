@@ -176,6 +176,7 @@ async def search_courses(
 
     Examples:
         - Search by department abbreviation: dept_abbr="CSCI"
+            - Complete list of department abbreviations can be found in the tool "get_abbreviations_and_terms"
         - Search by course number: course_num="5511"
         - Search by general term: search_term="Machine Learning"
         - Filter by average GPA range: min_gpa=3.0, max_gpa=4.0
@@ -312,7 +313,7 @@ async def search_courses(
         "courses": courses
     }
 
-@app.tool(name="get_course_grades_of_each_professor_and_term")
+@app.tool(name="get_grades_of_a_course")
 async def get_course_details(
     ctx: Context, 
     dept_abbr: str, 
@@ -324,6 +325,7 @@ async def get_course_details(
     
     Args:
         dept_abbr: Department abbreviation (e.g., "CSCI")
+            - Complete list of department abbreviations can be found in the tool "get_abbreviations_and_terms"
         course_num: Course number (e.g., "5511")
         campus: Campus code (default: UMNTC)
     
@@ -487,7 +489,7 @@ async def search_professors(
     
     return professors
 
-@app.tool(name="get_courses_grade_statistics_of_professor")
+@app.tool(name="get_grades_of_a_professor")
 async def get_professor_details(
     ctx: Context, 
     professor_id: int
@@ -706,7 +708,7 @@ async def resource_abbreviations_and_terms(ctx: Context) -> Dict[str, Any]:
         data = json.loads(content)
         return data
     
-@app.tool(enabled=False)
+@app.tool(enabled=True)
 async def get_abbreviations_and_terms(ctx: Context) -> Dict[str, Any]:
     """Get abbreviations, department code and academic terms"""
     
