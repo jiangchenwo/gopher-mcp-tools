@@ -1,0 +1,54 @@
+{
+  "dxt_version": "0.1",
+  "name": "gopher-grades",
+  "display_name": "Gopher Grades",
+  "version": "1.0.0",
+  "description": "Search and analyze UMN courses, professors, and grade distributions.",
+  "long_description": "Gopher Grades MCP is a Python MCP server that enables searching and analysis of University of Minnesota courses, professors, and grade distributions. It allows LLM to find courses by department, number, level, GPA, and keywords; retrieve detailed grade statistics for courses and professors, and list courses fulfilling liberal education requirements.",
+  "author": {
+    "name": "Chen Jiang",
+    "url": "https://github.com/jiangchenwo"
+  },
+  "homepage": "https://github.com/jiangchenwo/gopher-mcp-servers",
+  "documentation": "https://github.com/jiangchenwo/gopher-mcp-servers/README.md",
+  "server": {
+    "type": "python",
+    "entry_point": "server/gopher_grades_server.py",
+    "mcp_config": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "${__dirname}",
+        "run",
+        "server/gopher_grades_server.py"
+      ]
+    }
+  },
+  "tools": [
+    {
+      "name": "search_courses",
+      "description": "Search for UMN courses by department, course number, level, GPA, and descriptions. Returns course details and grade statistics."
+    },
+    {
+      "name": "get_grades_of_a_course",
+      "description": "Get details and grades for a course."
+    },
+    {
+      "name": "search_professors",
+      "description": "Search professors and their courses."
+    },
+    {
+      "name": "get_grades_of_a_professor",
+      "description": "Get professor stats and grades."
+    },
+    {
+      "name": "get_liberal_education_courses",
+      "description": "Get courses that fulfill a specific liberal education requirement."
+    }
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jiangchenwo/gopher-mcp-servers"
+  }
+}

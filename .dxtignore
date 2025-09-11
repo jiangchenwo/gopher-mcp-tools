@@ -1,0 +1,26 @@
+# ---- Python artefacts --------------------------------------------------
+__pycache__/
+*.py[cod]
+*.so
+
+# ---- Packaging ---------------------------------------------------------
+*.egg-info/
+build/
+dist/
+
+# ---- Environments & tooling -------------------------------------------
+.env
+.venv/
+venv/
+.idea/
+.vscode/
+.claude/
+
+# ---- macOS clutter -----------------------------------------------------
+.DS_Store
+
+# ---- Others ------------------------------------------------------------
+data-processing/
+data/deptAbbrName.json
+assets/
+test.ipynb
