@@ -18,11 +18,11 @@ Gopher grades MCP server provides the following tools:
 
 ## Installation & Setup
 
-### 1. Installing `uv`
-Before installing the Gopher grades MCP server, you need to install `uv` if you haven't yet. See [instructions here](https://docs.astral.sh/uv/getting-started/installation/). 
+### 1. Install uv
+Install `uv` before running the MCP server. Follow [the official instructions](https://docs.astral.sh/uv/getting-started/installation/).
 
-### 2. Installing Gopher Grades MCP
-Please follow the instructions corresponding to your platform.
+### 2. Install Gopher Grades MCP
+Follow the steps for your platform.
 
 #### Claude Desktop (Recommended)
 
@@ -32,6 +32,10 @@ Please follow the instructions corresponding to your platform.
 </div>
 
 #### Custom Setup
+
+- Clone or download this repo. 
+- Replace `ABS/PATH/TO/` in the following config by the absolute path to this repo.
+- Add the config to supported software.
 
 ```json
 {

@@ -2,7 +2,7 @@
   "dxt_version": "0.1",
   "name": "gopher-grades",
   "display_name": "Gopher Grades",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Search and analyze UMN courses, professors, and grade distributions.",
   "long_description": "Gopher Grades MCP is a Python MCP server that enables searching and analysis of University of Minnesota courses, professors, and grade distributions. It allows LLM to find courses by department, number, level, GPA, and keywords; retrieve detailed grade statistics for courses and professors, and list courses fulfilling liberal education requirements.",
   "author": {
