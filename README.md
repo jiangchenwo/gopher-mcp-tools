@@ -26,7 +26,7 @@ Follow the steps for your platform.
 
 #### Claude Desktop (Recommended)
 
-- Download and double click [this desktop extension file](gopher-grades-mcp-v1.dxt). Then Claude Desktop should have a pop up window letting you install `Gopher Grades`.
+- Download and double click [this desktop extension file](gopher-grades-mcp-extension.dxt). Then Claude Desktop should have a pop up window letting you install `Gopher Grades`.
 - Enable the `Gopher Grades` tool on Claude Desktop as shown in the screenshot and start chatting. <div align="left">
 <img src="assets/claude-mcp-setup.png" alt="setup" width="50%">
 </div>
